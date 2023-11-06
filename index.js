@@ -63,7 +63,7 @@ const run = async () => {
             }).send({ success: true });
         });
 
-        //getting all foods
+        //getting all foods with all types of filter
         app.get("/api/v1/foods", async (req, res) => {
             const category = req.query.category;
 
@@ -72,10 +72,18 @@ const run = async () => {
                 query.foodCategory = { $regex: category, $options: "i" };
             }
 
-            const cursor = foodsCollection.find(query);
+            //pagination
+            const page = Number(req.query.page);
+            const limit = Number(req.query.limit);
+            const skip = (page - 1) * limit;
+
+            const cursor = foodsCollection.find(query).skip(skip).limit(limit);
             const foods = await cursor.toArray();
 
-            res.send(foods);
+            //count total
+            const total = await foodsCollection.countDocuments();
+
+            res.send({ total, foods });
         });
 
         //getting single food
@@ -109,7 +117,7 @@ const run = async () => {
         // sending users to the db
         app.post("/api/v1/users", async (req, res) => {
             const user = req.body;
-            console.log(user.providerData.email);
+            console.log(user);
 
             const result = await usersCollection.insertOne(user);
             res.send(result);
