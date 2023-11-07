@@ -65,6 +65,21 @@ const run = async () => {
             }).send({ success: true });
         });
 
+        //getting user specific orders
+        app.get("/api/v1/orders", async (req, res) => {
+            const email = req.query.email;
+
+            const query = {};
+            if (email) {
+                query["order.buyerInfo.email"] = email;
+            }
+
+            const cursor = orderCollection.find(query);
+            const result = await cursor.toArray();
+
+            res.send(result);
+        });
+
         //sending orders to the db
         app.post("/api/v1/orders", async (req, res) => {
             const recentOrder = req.body;
