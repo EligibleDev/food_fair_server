@@ -65,13 +65,22 @@ const run = async () => {
             }).send({ success: true });
         });
 
+        //deleting order
+        app.delete("/api/v1/delete_order/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        });
+
         //getting user specific orders
         app.get("/api/v1/orders", async (req, res) => {
             const email = req.query.email;
 
             const query = {};
             if (email) {
-                query["order.buyerInfo.email"] = email;
+                query["buyerInfo.email"] = email;
             }
 
             const cursor = orderCollection.find(query);
@@ -144,15 +153,25 @@ const run = async () => {
             res.send(foundFoods);
         });
 
-        //increasing the timesSold value
-        app.post("/api/v1/foods/increment_sales/:foodId", async (req, res) => {
+        //updating sales and quantity
+        app.post("/api/v1/foods/update_sales_quantity/:foodId", async (req, res) => {
             const foodId = req.params.foodId;
+            const quantity = req.query.quantity;
+
+            const updateValue = quantity >= 0 ? quantity : -quantity;
+            const increment = quantity >= 0 ? 1 : -1;
+
             await foodsCollection.updateOne(
                 { _id: new ObjectId(foodId) },
-                { $inc: { timesSold: 1 } }
+                { $inc: { timesSold: increment }, $inc: { quantity: -updateValue } }
             );
 
-            res.json({ message: "Sales count updated successfully" });
+            const message =
+                quantity >= 0
+                    ? "Sales count updated successfully"
+                    : "Quantity updated successfully";
+
+            res.json({ message });
         });
 
         // sending users to the db
@@ -166,7 +185,7 @@ const run = async () => {
 
         //getting user data
         app.get("/api/v1/users", async (req, res) => {
-            const cursor = users.find();
+            const cursor = usersCollection.find();
             const result = await cursor.toArray();
 
             res.send(result);
