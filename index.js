@@ -35,6 +35,8 @@ const run = async () => {
         //await client.connect();
         const foodsCollection = client.db("foodFairDB").collection("foods");
         const usersCollection = client.db("foodFairDB").collection("users");
+        const categoryCollection = client.db("foodFairDB").collection("categories");
+        const orderCollection = client.db("foodFairDB").collection("orders");
 
         //custom middleware
         const checker = (req, res, next) => {
@@ -63,14 +65,30 @@ const run = async () => {
             }).send({ success: true });
         });
 
+        //sending orders to the db
+        app.post("/api/v1/orders", async (req, res) => {
+            const recentOrder = req.body;
+            console.log(recentOrder);
+
+            const result = await orderCollection.insertOne(recentOrder);
+            res.send(result);
+        });
+
         //getting all foods with all types of filter
         app.get("/api/v1/foods", async (req, res) => {
             const category = req.query.category;
+            const country = req.query.country;
 
             const query = {};
             if (category) {
-                query.foodCategory = { $regex: category, $options: "i" };
+                query.foodCategory = category;
             }
+
+            if (country) {
+                query.foodOrigin = country;
+            }
+
+            // { $regex: country, $options: 'i' };
 
             //pagination
             const page = Number(req.query.page);
@@ -86,8 +104,16 @@ const run = async () => {
             res.send({ total, foods });
         });
 
+        //getting food category
+        app.get("/api/v1/categories", async (req, res) => {
+            const cursor = categoryCollection.find();
+            const categories = await cursor.toArray();
+
+            res.send(categories);
+        });
+
         //getting single food
-        app.get("/api/v1/foods/:foodId", async (req, res) => {
+        app.get("/api/v1/food/:foodId", async (req, res) => {
             const foodId = req.params.foodId;
             const query = { _id: new ObjectId(foodId) };
 
@@ -104,7 +130,7 @@ const run = async () => {
         });
 
         //increasing the timesSold value
-        app.post("/api/v1/foods/increment-sales/:foodId", async (req, res) => {
+        app.post("/api/v1/foods/increment_sales/:foodId", async (req, res) => {
             const foodId = req.params.foodId;
             await foodsCollection.updateOne(
                 { _id: new ObjectId(foodId) },
