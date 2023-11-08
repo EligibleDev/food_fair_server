@@ -111,6 +111,7 @@ const run = async () => {
         app.get("/api/v1/foods", async (req, res) => {
             const category = req.query.category;
             const country = req.query.country;
+            const email = req.query.email;
 
             const query = {};
             if (category) {
@@ -119,6 +120,10 @@ const run = async () => {
 
             if (country) {
                 query.foodOrigin = country;
+            }
+
+            if (email) {
+                query["authorInfo.email"] = email;
             }
 
             // { $regex: country, $options: 'i' };
