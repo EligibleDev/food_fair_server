@@ -65,6 +65,31 @@ const run = async () => {
             }).send({ success: true });
         });
 
+        //updating food
+        app.patch("/api/v1/food/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const options = { upsert: true };
+            const updatedFood = req.body;
+            console.log(updatedFood);
+
+            const food = {
+                $set: {
+                    foodName: updatedFood.foodName,
+                    image: updatedFood.image,
+                    foodCategory: updatedFood.foodCategory,
+                    price: updatedFood.price,
+                    foodOrigin: updatedFood.foodOrigin,
+                    shortDescription: updatedFood.shortDescription,
+                    quantity: updatedFood.quantity,
+                },
+            };
+
+            const result = await foodsCollection.updateOne(query, food, options);
+            res.send(result);
+        });
+
         //deleting order
         app.delete("/api/v1/delete_order/:id", async (req, res) => {
             const id = req.params.id;
@@ -170,7 +195,8 @@ const run = async () => {
         //updating sales and quantity
         app.post("/api/v1/foods/update_sales_quantity/:foodId", async (req, res) => {
             const foodId = req.params.foodId;
-            const quantity = req.query.quantity;
+            const quantityString = req.query.quantity;
+            const quantity = parseInt(quantityString);
 
             const updateValue = quantity >= 0 ? quantity : -quantity;
             const increment = quantity >= 0 ? 1 : -1;
