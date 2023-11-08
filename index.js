@@ -89,6 +89,15 @@ const run = async () => {
             res.send(result);
         });
 
+        //sending newly added food to database
+        app.post("/api/v1/foods", async (req, res) => {
+            const newFood = req.body;
+            console.log(newFood);
+
+            const result = await foodsCollection.insertOne(newFood);
+            res.send(result);
+        });
+
         //sending orders to the db
         app.post("/api/v1/orders", async (req, res) => {
             const recentOrder = req.body;
