@@ -6,15 +6,12 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
-// const secret =
-//     "4d549bdc368d3751630cbcb610e353e3b323e57fa2769e25249b9de45df29c39855cae270fa2f18d485dd7bcdcb76b2403d4ef49d0c37889ba4a997d83299dee";
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-        origin: "http://localhost:5173",
-        //https://assignment-11-food-fair.web.app
+        origin: "https://assignment-11-food-fair.web.app",
+        // origin: "http://localhost:5173",
         credentials: true,
     })
 );
@@ -148,7 +145,7 @@ const run = async () => {
         });
 
         //getting all foods with all types of filter
-        app.get("/api/v1/foods", checker, async (req, res) => {
+        app.get("/api/v1/foods", async (req, res) => {
             const category = req.query.category;
             const country = req.query.country;
             const email = req.query.email;
